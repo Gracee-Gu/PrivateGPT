@@ -7,8 +7,8 @@ on:
     branches: [main]
 
 jobs:
-  backend-lint:
-    name: Backend — Lint
+  backend-check:
+    name: Backend - Import & Lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -18,14 +18,17 @@ jobs:
       - name: Install backend deps
         working-directory: backend
         run: |
-          pip install --upgrade pip
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
           pip install ruff
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-      - name: Lint
-        run: ruff check backend/ --ignore E501 || true
+      - name: Lint backend
+        run: ruff check backend/ --ignore E501
+      - name: Import backend app
+        working-directory: backend
+        run: python -c "import app"
 
-  frontend-build:
-    name: Frontend — Build
+  frontend-check:
+    name: Frontend - Test & Build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -33,13 +36,11 @@ jobs:
         with:
           node-version: "18"
           cache: npm
-      - name: Install dependencies
-        run: npm ci --legacy-peer-deps
-      - name: Build frontend assets
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install frontend dependencies
         working-directory: frontend
-        run: |
-          if [ -f package.json ]; then
-            npm ci --legacy-peer-deps || npm install --legacy-peer-deps
-            npm run build 2>/dev/null || echo "No build script, skipping"
-          fi
-        continue-on-error: true
+        run: npm ci --legacy-peer-deps
+      - name: Run frontend tests
+        run: npm test
+      - name: Build frontend assets
+        run: npm run build:frontend

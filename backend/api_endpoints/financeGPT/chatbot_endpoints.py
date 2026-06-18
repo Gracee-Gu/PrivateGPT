@@ -1,7 +1,6 @@
 import sqlite3
 import os
 import openai
-import os
 #import ray
 import numpy as np
 from sec_api import QueryApi, RenderApi
@@ -9,9 +8,10 @@ import requests
 import PyPDF2
 import sys
 
-#Todo: hardcode these when deploying
-#sec_api_key=os.environ.get('sec_api_key')
-sec_api_key="105d85762b9138da11aa136b3313112c93888324437c9aff80c3babfa607ac34"
+# Preserve existing desktop behavior for now, but allow local overrides via
+# backend/.env so new setups do not have to edit the source tree.
+SEC_API_KEY_FALLBACK = "105d85762b9138da11aa136b3313112c93888324437c9aff80c3babfa607ac34"
+sec_api_key = os.environ.get("SEC_API_KEY") or os.environ.get("sec_api_key") or SEC_API_KEY_FALLBACK
 
 
 USER_ID = 1

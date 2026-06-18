@@ -1,5 +1,6 @@
 const { app, BrowserWindow } = require("electron");
 const express = require("express");
+const fs = require("fs");
 const path = require("path");
 
 const { spawn } = require("child_process");
@@ -49,9 +50,12 @@ function createMainWindow() {
 }
 
 function createWindow() {
-    let appDistPath = process.env.NODE_ENV === 'production' ? path.join(process.resourcesPath, 'appdist') : path.join(__dirname, 'appdist');
+    const appDistPath = process.env.NODE_ENV === 'production' ? path.join(process.resourcesPath, 'appdist') : path.join(__dirname, 'appdist');
     const dbPath = path.join(appDistPath, 'database.db');
-    let backendPath = path.join(appDistPath, 'app');
+    const backendCandidates = process.platform === "win32"
+        ? [path.join(appDistPath, "app.exe"), path.join(appDistPath, "app")]
+        : [path.join(appDistPath, "app"), path.join(appDistPath, "app.exe")];
+    const backendPath = backendCandidates.find((candidate) => fs.existsSync(candidate)) || backendCandidates[0];
 
     flaskProcess = spawn(backendPath, [], {
         env: { ...process.env, DB_PATH: dbPath }

@@ -17,11 +17,30 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "18"
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            frontend/package-lock.json
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - name: Install dependencies
+      - name: Install root dependencies
         run: npm ci --legacy-peer-deps
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci --legacy-peer-deps
+      - name: Build frontend assets
+        run: npm run build:frontend
+      - name: Install backend build dependencies
+        working-directory: backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Build backend executable
+        working-directory: backend
+        run: pyinstaller app.spec
+      - name: Stage backend assets for Electron packaging
+        run: npm run stage:appdist
       - name: Build and package
         run: npm run make
         env:

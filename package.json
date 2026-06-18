@@ -5,7 +5,10 @@
   "main": "main.js",
   "scripts": {
     "start": "electron-forge start",
-    "test": "npm --prefix frontend test -- --watchAll=false",
+    "test": "npm run test:frontend",
+    "test:frontend": "npm --prefix frontend test -- --watchAll=false",
+    "build:frontend": "npm --prefix frontend run build",
+    "stage:appdist": "node scripts/stage-appdist.js",
     "package": "electron-forge package",
     "make": "electron-forge make",
     "package_prod": "NODE_ENV=production electron-forge make"
